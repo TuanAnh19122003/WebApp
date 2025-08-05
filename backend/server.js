@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const morgan = require('morgan')
 const cors = require('cors');
 
 require('dotenv').config();
@@ -15,6 +16,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'src', 'uploads')));
 const apiRouter = require('./src/routes/index');
 
 app.use(cors());
+app.use(morgan('dev'))
 
 app.use('/api', apiRouter);
 app.get('/', (req, res) => {
