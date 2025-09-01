@@ -5,14 +5,35 @@ const path = require('path');
 const fs = require('fs');
 
 class UserService {
-    static async findAll() {
-        const users = await User.findAll({
+    static async findAll(options = {}) {
+        const { offset, limit, search } = options;
+
+        const whereClause = {};
+        if (search) {
+            const { Op } = require('sequelize');
+            whereClause[Op.or] = [
+                { id: { [Op.like]: `%${search}%` } },
+                { lastname: { [Op.like]: `%${search}%` } },
+                { firstname: { [Op.like]: `%${search}%` } },
+                { email: { [Op.like]: `%${search}%` } },
+                { phone: { [Op.like]: `%${search}%` } },
+                { is_active: { [Op.like]: `%${search}%` } },
+            ];
+        }
+
+        const queryOptions = {
+            where: whereClause,
             include: {
                 model: Role,
                 as: 'role',
                 attributes: ['id', 'name']
-            }
-        });
+            },
+            offset,
+            limit,
+            order: [['createdAt', 'ASC']]
+        };
+
+        const users = await User.findAndCountAll(queryOptions);
         return users;
     }
 
@@ -65,6 +86,7 @@ class UserService {
 
         return await User.destroy({ where: { id } });
     }
+
 }
 
 module.exports = UserService;
