@@ -20,9 +20,22 @@ const Order = sequelize.define('Order', {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
     },
+    shipping_address: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+    },
     status: {
         type: DataTypes.ENUM('pending', 'paid', 'shipped', 'completed', 'cancelled'),
         defaultValue: 'pending',
+    },
+    paymentMethod: {
+        type: DataTypes.ENUM('cod', 'paypal'),
+        defaultValue: 'cod',
+        allowNull: false,
+    },
+    paypal_order_id: {
+        type: DataTypes.STRING,
+        allowNull: true,
     },
     note: {
         type: DataTypes.TEXT,

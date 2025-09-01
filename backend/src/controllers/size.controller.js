@@ -10,6 +10,7 @@ class SizeController {
             let result;
 
             if (!page || !pageSize) {
+                // Không phân trang
                 result = await SizeService.findAll({ search });
                 return res.status(200).json({
                     success: true,
@@ -39,7 +40,7 @@ class SizeController {
             });
         }
     }
-
+    
     async create(req, res) {
         try {
             const data = await SizeService.create(req.body);

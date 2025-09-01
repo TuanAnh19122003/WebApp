@@ -5,7 +5,7 @@ const upload = require('../utils/multer');
 const ProductController = require('../controllers/product.controller');
 
 router.get('/', ProductController.findAll);
-router.get('/:id', ProductController.detail);
+router.get('/with-sizes', ProductController.findAllWithSizes);
 router.post('/', upload.single('image'), ProductController.create);
 router.put('/:id', upload.single('image'), ProductController.update);
 router.delete('/:id', ProductController.delete);

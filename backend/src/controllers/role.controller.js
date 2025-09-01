@@ -10,6 +10,7 @@ class RoleController {
             let result;
 
             if (!page || !pageSize) {
+                // Không phân trang
                 result = await RoleService.findAll({ search });
                 return res.status(200).json({
                     success: true,

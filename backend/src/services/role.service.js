@@ -33,8 +33,8 @@ class RoleService {
     }
 
     static async update(id, data) {
-        const role = await Role.findOne({ where: { id: id } })
-        if (!role) throw new Error('Không tìm thấy role');
+        const role = await Role.findOne({ where: { id: id } });
+        if (!role) throw new Error('Role không tồn tại');
         return await role.update(data)
     }
 

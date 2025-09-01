@@ -10,6 +10,7 @@ const Cart = require('./cart.model');
 const CartItem = require('./cartItem.model');
 const Order = require('./order.model');
 const OrderItem = require('./orderItem.model');
+const Contact = require('./contact.model');
 
 const db = {
     User,
@@ -23,6 +24,7 @@ const db = {
     CartItem,
     Order,
     OrderItem,
+    Contact,
     sequelize
 }
 

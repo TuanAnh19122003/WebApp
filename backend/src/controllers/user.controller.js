@@ -60,7 +60,7 @@ class UserController {
             })
         }
     }
-
+    
     async update(req, res) {
         try {
             const data = await UserService.update(req.params.id, req.body, req.file);

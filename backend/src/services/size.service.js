@@ -27,6 +27,7 @@ class SizeService {
         const sizes = await Size.findAndCountAll(queryOptions);
         return sizes;
     }
+
     static async create(data) {
         const size = await Size.create(data);
         return size;

@@ -3,47 +3,45 @@ const ProductSize = require('../models/product_size.model');
 const Size = require('../models/size.model');
 
 class ProductSizeService {
-    static async findAll() {
-        const data = await ProductSize.findAll({
+    static async findAll(options = {}) {
+        const { offset, limit, search } = options;
+
+        const whereClause = {};
+        if (search) {
+            const { Op } = require('sequelize');
+            whereClause[Op.or] = [
+                { '$product.name$': { [Op.like]: `%${search}%` } },
+                { '$size.name$': { [Op.like]: `%${search}%` } },
+            ];
+        }
+
+        const queryOptions = {
+            where: whereClause,
             include: [
                 {
                     model: Product,
                     as: 'product',
-                    attributes: ['name']
+                    attributes: ['name'],
+                    required: true
                 },
                 {
                     model: Size,
                     as: 'size',
-                    attributes: ['name']
+                    attributes: ['name'],
+                    required: true
                 }
-            ]
-        });
+            ],
+            order: [['createdAt', 'ASC']]
+        }
+
+        if (offset !== undefined && limit !== undefined) {
+            queryOptions.offset = offset;
+            queryOptions.limit = limit;
+        }
+
+        const data = await ProductSize.findAndCountAll(queryOptions);
         return data;
     }
-
-    static async detail(productId, sizeId) {
-        const data = await ProductSize.findOne({
-            where: {
-                productId: productId,
-                sizeId: sizeId
-            },
-            include: [
-                {
-                    model: Product,
-                    as: 'product',
-                    attributes: ['name']
-                },
-                {
-                    model: Size,
-                    as: 'size',
-                    attributes: ['name']
-                }
-            ]
-        });
-
-        return data;
-    }
-
 
     static async create(data) {
         const productSize = await ProductSize.create(data);

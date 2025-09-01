@@ -29,6 +29,10 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    phone: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     roleId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -36,7 +40,12 @@ const User = sequelize.define('User', {
             model: 'roles',
             key: 'id'
         }
-    }
+    },
+    is_active: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+    },
 }, {
     timestamps: true,
     tableName: 'users'

@@ -3,69 +3,180 @@ const OrderService = require('../services/order.service');
 class OrderController {
     async findAll(req, res) {
         try {
-            const orders = await OrderService.findAll();
+            const page = parseInt(req.query.page) || 1;
+            const pageSize = parseInt(req.query.pageSize) || 5;
+            const offset = (page - 1) * pageSize;
+
+            const { count, rows } = await OrderService.findAll({ offset, limit: pageSize });
+
             res.status(200).json({
-                message: 'Orders fetched successfully',
-                orders
+                success: true,
+                message: 'Lấy danh sách đơn hàng thành công',
+                data: rows,
+                total: count,
+                page,
+                pageSize
             });
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            console.error('Lỗi:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Đã xảy ra lỗi khi lấy danh sách đơn hàng',
+                error: error.message,
+            });
         }
     }
 
     async createOrder(req, res) {
         try {
-            const { items, totalPrice, note } = req.body;
+            const { items, totalPrice, note, shipping_address, paymentMethod } = req.body;
             const userId = req.user?.id || req.body.userId;
 
             if (!items || items.length === 0) {
                 return res.status(400).json({ message: 'Order must have at least one item' });
             }
 
-            const order = await OrderService.create(userId, items, totalPrice, note);
-            res.status(201).json({ message: 'Order created successfully', order });
+            const { order, approveUrl } = await OrderService.create(
+                userId,
+                items,
+                totalPrice,
+                note,
+                shipping_address,
+                paymentMethod
+            );
+
+            res.status(201).json({
+                success: true,
+                message: 'Order created successfully',
+                data: order,
+                ...(approveUrl && { approveUrl })
+            });
         } catch (err) {
             console.error('Error in createOrder:', err);
-            res.status(500).json({ message: 'Failed to create order' });
+            res.status(500).json({
+                success: false,
+                message: 'Failed to create order',
+                error: err.message
+            });
         }
-    };
+    }
+
+
+    async updateOrder(req, res) {
+        try {
+            const orderId = req.params.id;
+            const { userId, note, totalPrice, items } = req.body;
+
+            if (!items || !Array.isArray(items) || items.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Order must have at least one item',
+                });
+            }
+
+            const updated = await OrderService.update(orderId, {
+                userId,
+                note,
+                totalPrice,
+                items,
+            });
+
+            res.status(200).json({
+                success: true,
+                message: 'Order updated successfully',
+                data: updated,
+            });
+        } catch (err) {
+            console.error('Error in updateOrder:', err);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to update order',
+            });
+        }
+    }
+
 
     async getOrdersByUser(req, res) {
         try {
             const userId = req.user?.id || req.params.id;
-            const orders = await OrderService.getOrdersByUser(userId);
+            const data = await OrderService.getOrdersByUser(userId);
             res.status(200).json({
+                success: true,
                 message: 'Orders fetched successfully',
-                orders
+                data
             });
+
         } catch (err) {
             console.error('Error in getOrdersByUser:', err);
-            res.status(500).json({ message: 'Failed to fetch orders' });
+            res.status(500).json({
+                success: false,
+                message: 'Failed to fetch orders'
+            });
         }
     };
 
     async updateOrderStatus(req, res) {
         try {
             const { orderId, status } = req.body;
-            const updated = await OrderService.updateOrderStatus(orderId, status);
-            res.status(200).json({ message: 'Order status updated', order: updated });
+            const data = await OrderService.updateOrderStatus(orderId, status);
+            res.status(200).json({
+                success: true,
+                message: 'Order status updated',
+                data
+            });
         } catch (err) {
             console.error('Error in updateOrderStatus:', err);
-            res.status(500).json({ message: 'Failed to update order status' });
+            res.status(500).json({
+                success: false,
+                message: 'Failed to update order status'
+            });
         }
     };
+
+    async updateOrderItemQuantity(req, res) {
+        try {
+            const { orderItemId } = req.params;
+            const { quantity } = req.body;
+
+            if (!quantity || quantity <= 0) {
+                return res.status(400).json({ message: 'Invalid quantity' });
+            }
+
+            const { data, newTotal } = await OrderService.updateOrderItemQuantity(orderItemId, quantity);
+
+            res.status(200).json({
+                success: true,
+                message: 'Order item quantity and total updated successfully',
+                data,
+                newTotal,
+            });
+        } catch (err) {
+            console.error('Error in updateOrderItemQuantity:', err);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to update order item quantity'
+            });
+        }
+    }
+
 
     async deleteOrder(req, res) {
         try {
             const { orderId } = req.params;
-            const result = await OrderService.delete(orderId);
-            res.status(200).json(result);
+            const data = await OrderService.delete(orderId);
+            res.status(200).json({
+                success: true,
+                message: 'Order deleted successfully',
+                data
+            });
         } catch (err) {
             console.error('Error in deleteOrder:', err);
-            res.status(500).json({ message: 'Failed to delete order' });
+            res.status(500).json({
+                success: false,
+                message: 'Failed to delete order'
+            });
         }
     };
-
 
 }
 

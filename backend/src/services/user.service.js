@@ -3,6 +3,7 @@ const Role = require('../models/role.model');
 const User = require('../models/user.model');
 const path = require('path');
 const fs = require('fs');
+const { log } = require('console');
 
 class UserService {
     static async findAll(options = {}) {
@@ -48,7 +49,7 @@ class UserService {
         const user = await User.create(data);
         return user;
     }
-
+    
     static async update(id, data, file) {
         const user = await User.findOne({ where: { id: id } });
         if (!user) throw new Error('User không tồn tại');

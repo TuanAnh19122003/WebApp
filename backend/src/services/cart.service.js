@@ -115,6 +115,12 @@ class CartService {
         await item.destroy();
         return { success: true };
     }
+
+    static async clearCart(userId) {
+        if (!userId) throw new Error('userId is required');
+        const deleted = await CartItem.destroy({ where: { id: userId } });
+        return deleted;
+    }
 }
 
 module.exports = CartService;
