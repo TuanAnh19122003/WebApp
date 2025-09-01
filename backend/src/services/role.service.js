@@ -1,9 +1,30 @@
 const Role = require('../models/role.model');
 
 class RoleService {
-    static async findAll() {
-        const data = await Role.findAll();
-        return data
+    static async findAll(options = {}) {
+        const { offset, limit, search } = options;
+        
+        const whereClause = {};
+        if (search) {
+            const { Op, where } = require('sequelize');
+            whereClause[Op.or] = [
+                { id: { [Op.like]: `%${search}%` } },
+                { name: { [Op.like]: `%${search}%` } },
+            ];
+        }
+        
+        const queryOptions = {
+            where: whereClause,
+            order: [['createdAt', 'ASC']]
+        };
+
+        if (offset !== undefined && limit !== undefined) {
+            queryOptions.offset = offset;
+            queryOptions.limit = limit;
+        }
+
+        const roles = await Role.findAndCountAll(queryOptions);
+        return roles;
     }
 
     static async create(data) {
