@@ -10,6 +10,7 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
 import RolePage from './pages/admin/role/RolePage';
+import UserPage from './pages/admin/user/UserPage';
 
 import { CartProvider } from './pages/user/CartContext';
 
@@ -33,6 +34,7 @@ const App = () => {
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
             <Route path='/admin/roles' element={<RolePage />} />
+            <Route path="/admin/users" element={<UserPage />} />
           </Route>
         </Routes>
       </CartProvider>
