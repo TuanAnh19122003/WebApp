@@ -19,6 +19,8 @@ import ProductSizePage from './pages/admin/product-size/ProductSizePage';
 import ContactPage from './pages/admin/contact/ContactPage';
 import OrderPage from './pages/admin/order/OrderPage';
 
+import Product from './pages/user/Product';
+import ProductDetail from './pages/user/ProductDetail';
 import { CartProvider } from './pages/user/CartContext';
 
 const App = () => {
@@ -29,6 +31,8 @@ const App = () => {
           {/* User routes */}
           <Route element={<UserLayout />}>
             <Route path="/" element={<Home />} />
+            <Route path='/product' element={<Product />} />
+            <Route path='/product/:id' element={<ProductDetail />} />
           </Route>
 
           {/* Auth routes */}
