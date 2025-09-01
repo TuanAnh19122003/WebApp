@@ -11,6 +11,9 @@ import RegisterPage from './pages/auth/RegisterPage';
 
 import RolePage from './pages/admin/role/RolePage';
 import UserPage from './pages/admin/user/UserPage';
+import CategoryPage from './pages/admin/category/CategoryPage';
+import SizePage from './pages/admin/size/SizePage';
+import DiscountPage from './pages/admin/discount/DiscountPage';
 
 import { CartProvider } from './pages/user/CartContext';
 
@@ -35,6 +38,9 @@ const App = () => {
             <Route index element={<Dashboard />} />
             <Route path='/admin/roles' element={<RolePage />} />
             <Route path="/admin/users" element={<UserPage />} />
+            <Route path='/admin/categories' element={<CategoryPage />} />
+            <Route path='/admin/sizes' element={<SizePage />} />
+             <Route path='/admin/discounts' element={<DiscountPage />} />
           </Route>
         </Routes>
       </CartProvider>
