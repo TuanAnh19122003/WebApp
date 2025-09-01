@@ -22,6 +22,9 @@ import OrderPage from './pages/admin/order/OrderPage';
 import Product from './pages/user/Product';
 import ProductDetail from './pages/user/ProductDetail';
 import { CartProvider } from './pages/user/CartContext';
+import Profile from './pages/user/Profile';
+import About from './pages/user/About';
+import Contact from './pages/user/Contact';
 
 const App = () => {
   return (
@@ -33,6 +36,9 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path='/product' element={<Product />} />
             <Route path='/product/:id' element={<ProductDetail />} />
+            <Route path='/profile' element={<Profile />} />
+            <Route path='/about' element={<About />} />
+            <Route path='/contact' element={<Contact />} />
           </Route>
 
           {/* Auth routes */}
