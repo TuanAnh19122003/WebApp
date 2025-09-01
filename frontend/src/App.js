@@ -21,10 +21,15 @@ import OrderPage from './pages/admin/order/OrderPage';
 
 import Product from './pages/user/Product';
 import ProductDetail from './pages/user/ProductDetail';
-import { CartProvider } from './pages/user/CartContext';
 import Profile from './pages/user/Profile';
 import About from './pages/user/About';
 import Contact from './pages/user/Contact';
+import CartPage from './pages/user/Cart';
+import { CartProvider } from './pages/user/CartContext';
+import Order from './pages/user/Order';
+import PaypalCallback from './pages/user/PaypalCallback';
+import PaymentSuccess from './pages/user/PaymentSuccess';
+import PaymentFail from './pages/user/PaymentFail';
 
 const App = () => {
   return (
@@ -39,6 +44,11 @@ const App = () => {
             <Route path='/profile' element={<Profile />} />
             <Route path='/about' element={<About />} />
             <Route path='/contact' element={<Contact />} />
+            <Route path='/cart' element={<CartPage />} />
+            <Route path="/order" element={<Order />} />
+            <Route path="/paypal-success" element={<PaypalCallback />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/payment-fail" element={<PaymentFail />} />
           </Route>
 
           {/* Auth routes */}
