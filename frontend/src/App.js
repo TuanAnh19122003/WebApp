@@ -17,6 +17,7 @@ import DiscountPage from './pages/admin/discount/DiscountPage';
 import ProductPage from './pages/admin/product/ProductPage';
 import ProductSizePage from './pages/admin/product-size/ProductSizePage';
 import ContactPage from './pages/admin/contact/ContactPage';
+import OrderPage from './pages/admin/order/OrderPage';
 
 import { CartProvider } from './pages/user/CartContext';
 
@@ -47,6 +48,7 @@ const App = () => {
             <Route path='/admin/products' element={<ProductPage />} />
             <Route path='/admin/product_sizes' element={<ProductSizePage />} />
             <Route path='/admin/contacts' element={<ContactPage />} />
+            <Route path='/admin/orders' element={<OrderPage />} />
           </Route>
         </Routes>
       </CartProvider>
