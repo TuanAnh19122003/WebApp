@@ -6,11 +6,13 @@ const userRouter = require('./user.routes');
 const categoryRouter = require('./category.routes');
 const sizeRouter = require('./size.routes');
 const discountRouter = require('./discount.routes');
+const productRouter = require('./product.routes');
 
 router.use('/roles', roleRouter);
 router.use('/users', userRouter);
 router.use('/categories', categoryRouter);
 router.use('/sizes', sizeRouter);
 router.use('/discounts', discountRouter);
+router.use('/products', productRouter);
 
 module.exports = router;
