@@ -4,6 +4,11 @@ import Home from './pages/user/Home';
 import Dashboard from './pages/admin/Dashboard';
 import AdminLayout from './layouts/AdminLayout';
 import UserLayout from "./layouts/UserLayout";
+
+import AuthLayout from './layouts/AuthLayout';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+
 import { CartProvider } from './pages/user/CartContext';
 
 const App = () => {
@@ -14,6 +19,12 @@ const App = () => {
           {/* User routes */}
           <Route element={<UserLayout />}>
             <Route path="/" element={<Home />} />
+          </Route>
+
+          {/* Auth routes */}
+          <Route element={<AuthLayout />}>
+            <Route path="/auth/login" element={<LoginPage />} />
+            <Route path="/auth/register" element={<RegisterPage />} />
           </Route>
 
           {/* Admin routes */}

@@ -3,7 +3,7 @@ const router = express.Router();
 
 const roleRouter = require('./role.routes');
 const userRouter = require('./user.routes');
-// const authRouter = require('./auth.routes');
+const authRouter = require('./auth.routes');
 const categoryRouter = require('./category.routes');
 const productRouter = require('./product.routes');
 const sizeRouter = require('./size.routes');
@@ -16,7 +16,7 @@ const paypalRoutes = require('./paypal.routes');
 
 router.use('/roles', roleRouter);
 router.use('/users', userRouter);
-// router.use('/auth', authRouter);
+router.use('/auth', authRouter);
 router.use('/categories', categoryRouter);
 router.use('/products', productRouter);
 router.use('/sizes', sizeRouter);
