@@ -3,53 +3,90 @@ const DiscountService = require('../services/discount.service');
 class DiscountController {
     async findAll(req, res) {
         try {
-            const discounts = await DiscountService.findAll();
-            res.status(201).json({
-                message: 'Lấy dữ liệu thành công',
-                discounts
+            const page = parseInt(req.query.page);
+            const pageSize = parseInt(req.query.pageSize);
+            const search = req.query.search || null;
+
+            let result;
+
+            if (!page || !pageSize) {
+                // Không phân trang
+                result = await DiscountService.findAll({ search });
+                return res.status(200).json({
+                    success: true,
+                    message: 'Lấy tất cả giảm giá thành công',
+                    data: result.rows,
+                    total: result.count
+                });
+            }
+
+            const offset = (page - 1) * pageSize;
+            result = await DiscountService.findAll({ offset, limit: pageSize, search });
+
+            res.status(200).json({
+                success: true,
+                message: 'Lấy danh sách giảm giá thành công',
+                data: result.rows,
+                total: result.count,
+                page,
+                pageSize
             });
         } catch (error) {
-            console.log('Loi: ', error);
-            res.status(500).json({ error: error.message });
+            console.error('Lỗi:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Đã xảy ra lỗi khi lấy danh sách size',
+                error: error.message
+            });
         }
     }
 
     async create(req, res) {
         try {
-            const discount = await DiscountService.create(req.body);
-            res.status(201).json({
-                message: 'Thêm thành công',
-                discount
+            const data = await DiscountService.create(req.body);
+            res.status(200).json({
+                success: true,
+                message: 'Thêm khuyến mại thành công',
+                data
             });
         } catch (error) {
             console.log('Loi: ', error);
-            res.status(500).json({ error: error.message });
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
         }
     }
 
     async update(req, res) {
         try {
-            const discount = await DiscountService.update(req.params.id, req.body);
-            res.status(201).json({
-                message: 'Cập nhật thành công',
-                discount
+            const data = await DiscountService.update(req.params.id, req.body);
+            res.status(200).json({
+                success: true,
+                message: 'Cập nhật khuyến mại thành công',
+                data
             });
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            console.log('Loi: ', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
         }
     }
 
     async delete(req, res) {
         try {
-            const discount = await DiscountService.delete(req.params.id);
-            res.status(201).json({
+            const data = await DiscountService.delete(req.params.id);
+            res.status(200).json({
                 success: true,
-                message: 'Xóa thành công',
+                message: 'Xóa khuyến mại thành công',
             });
         } catch (error) {
-            res.status(500).json({ 
-                success: true, 
-                error: error.message 
+            console.log('Loi: ', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
             });
         }
     }

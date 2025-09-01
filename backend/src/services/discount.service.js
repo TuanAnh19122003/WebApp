@@ -1,8 +1,31 @@
 const Discount = require('../models/discount.model');
 
 class DiscountService {
-    static async findAll() {
-        const discounts = await Discount.findAll();
+    static async findAll(options = {}) {
+        const { offset, limit, search } = options;
+
+        const whereClause = {};
+        if (search) {
+            const { Op } = require('sequelize');
+            whereClause[Op.or] = [
+                { id: { [Op.like]: `%${search}%` } },
+                { name: { [Op.like]: `%${search}%` } },
+                { percentage: { [Op.like]: `%${search}%` } },
+                { description: { [Op.like]: `%${search}%` } },
+            ];
+        }
+
+        const queryOptions = {
+            where: whereClause,
+            order: [['createdAt', 'ASC']]
+        };
+
+        if (offset !== undefined && limit !== undefined) {
+            queryOptions.offset = offset;
+            queryOptions.limit = limit;
+        }
+
+        const discounts = await Discount.findAndCountAll(queryOptions);
         return discounts;
     }
 
