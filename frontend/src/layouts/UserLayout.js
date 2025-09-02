@@ -10,7 +10,7 @@ import {
 import { CartContext } from '../pages/user/CartContext';
 import { jwtDecode } from 'jwt-decode';
 import logo from '../assets/logo.png';
-
+import ChatWidget from '../components/ChatWidget';
 
 const { Header, Content, Footer } = Layout;
 
@@ -107,7 +107,6 @@ const UserLayout = () => {
                     </span>
                 </Link>
 
-
                 <Menu
                     mode="horizontal"
                     theme="dark"
@@ -174,6 +173,9 @@ const UserLayout = () => {
             <Footer style={{ textAlign: 'center' }}>
                 ©{new Date().getFullYear()} MyShop. All rights reserved.
             </Footer>
+
+            {/* Chat Widget */}
+            <ChatWidget />
         </Layout>
     );
 };

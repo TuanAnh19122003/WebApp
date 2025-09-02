@@ -13,7 +13,8 @@ const cartRouter = require('./cart.routes');
 const orderRouter = require('./order.routes');
 const contactRouter = require('./contact.routes');
 const paypalRoutes = require('./paypal.routes');
-const addressRouter = require('./address.routes')
+const addressRouter = require('./address.routes');
+const aiRouter = require('./ai.routes');
 
 router.use('/roles', roleRouter);
 router.use('/users', userRouter);
@@ -28,5 +29,6 @@ router.use('/orders', orderRouter);
 router.use('/contacts', contactRouter);
 router.use('/paypal', paypalRoutes);
 router.use('/address', addressRouter);
+router.use('/ai', aiRouter);
 
 module.exports = router;
