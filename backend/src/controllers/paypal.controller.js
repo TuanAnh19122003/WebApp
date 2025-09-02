@@ -3,28 +3,37 @@ const checkoutNodeJssdk = require('@paypal/checkout-server-sdk');
 const Order = require('../models/order.model');
 
 /**
+ * Helper: convert cart items sang PayPal format, tránh ITEM_TOTAL_MISMATCH
+ */
+const convertCartToPaypalItems = (items, usdRate = 25000) => {
+    // items: [{ name, price (VND), quantity }]
+    const paypalItems = items.map(item => {
+        const usdPrice = Math.round((item.price / usdRate) * 100) / 100; // 2 chữ số
+        return {
+            name: item.name,
+            unit_amount: {
+                currency_code: "USD",
+                value: usdPrice.toFixed(2), // string 2 chữ số
+            },
+            quantity: String(item.quantity),
+        };
+    });
+
+    const itemTotal = paypalItems
+        .reduce((sum, item) => sum + parseFloat(item.unit_amount.value) * parseInt(item.quantity), 0);
+
+    return { paypalItems, itemTotal: itemTotal.toFixed(2) };
+};
+
+/**
  * Create PayPal order
  */
 const create = async (req, res) => {
     try {
         const { items } = req.body; // [{ name, price, quantity }]
+        const { paypalItems, itemTotal } = convertCartToPaypalItems(items);
 
-        // Build items list
-        const paypalItems = items.map((item) => ({
-            name: item.name,
-            unit_amount: {
-                currency_code: "USD",
-                value: parseFloat(item.price).toFixed(2),
-            },
-            quantity: String(item.quantity),
-        }));
-
-        // Calculate item total
-        const itemTotal = paypalItems
-            .reduce((sum, item) => sum + (parseFloat(item.unit_amount.value) * parseInt(item.quantity)), 0)
-            .toFixed(2);
-
-        // Create request
+        // Tạo request PayPal
         const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
         request.prefer("return=representation");
         request.requestBody({
@@ -48,7 +57,7 @@ const create = async (req, res) => {
 
         const order = await paypalClient().execute(request);
 
-        // Save to DB (giả sử model Order có trường paypal_order_id)
+        // Lưu DB
         const newOrder = await Order.create({
             paypal_order_id: order.result.id,
             status: "pending",
@@ -62,7 +71,7 @@ const create = async (req, res) => {
             data: newOrder,
         });
     } catch (err) {
-        console.error("Error in createOrder:", err);
+        console.error("Error in createOrder:", err.response?.data || err);
         res.status(500).json({
             success: false,
             message: "PayPal order creation failed",
@@ -98,7 +107,7 @@ const capture = async (req, res) => {
             paypal: capture.result,
         });
     } catch (err) {
-        console.error("Error in capture:", err);
+        console.error("Error in capture:", err.response?.data || err);
         res.status(500).json({
             success: false,
             message: "PayPal capture failed",

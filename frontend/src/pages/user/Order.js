@@ -13,6 +13,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { formatCurrency } from '../../utils/helpers';
 import { CartContext } from './CartContext';
+import AddressModal from '../../components/AddressModal';
 
 const { Title } = Typography;
 const API_URL = 'http://localhost:5000';
@@ -28,6 +29,7 @@ const Order = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     const userId = user?.id;
     const { fetchCartCount } = useContext(CartContext);
+    const [modalVisible, setModalVisible] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -156,13 +158,23 @@ const Order = () => {
                                     placeholder="Nhập số điện thoại"
                                 />
                             </Form.Item>
-                            <Form.Item label="Địa chỉ giao hàng">
-                                <Input
-                                    value={address}
-                                    onChange={e => setAddress(e.target.value)}
-                                    placeholder="Nhập địa chỉ"
+                            <Form layout="vertical">
+                                <Form.Item label="Địa chỉ giao hàng">
+                                    <Input
+                                        placeholder="Chọn địa chỉ"
+                                        value={address}
+                                        readOnly
+                                        onClick={() => setModalVisible(true)}
+                                    />
+                                </Form.Item>
+
+                                <AddressModal
+                                    visible={modalVisible}
+                                    onClose={() => setModalVisible(false)}
+                                    onConfirm={setAddress}
                                 />
-                            </Form.Item>
+                            </Form>
+
                             <Form.Item label="Phương thức thanh toán">
                                 <Radio.Group
                                     onChange={e => setPaymentMethod(e.target.value)}
