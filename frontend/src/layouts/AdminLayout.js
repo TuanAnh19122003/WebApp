@@ -260,7 +260,7 @@ const AdminLayout = () => {
                     </div>
                 </Content>
                 <Footer style={{ textAlign: 'center' }}>
-                    Ant Design ©{new Date().getFullYear()} Created by Tank
+                    Ant Design ©{new Date().getFullYear()} Created by Thắng
                 </Footer>
             </Layout>
         </Layout>

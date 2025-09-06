@@ -1,4 +1,3 @@
-// src/pages/admin/Dashboard.js
 import React, { useEffect, useState } from 'react';
 import {
     Card, Col, Row, Table, Typography, Tag, message, Button
