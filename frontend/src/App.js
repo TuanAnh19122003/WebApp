@@ -30,6 +30,7 @@ import Order from './pages/user/Order';
 import PaypalCallback from './pages/user/PaypalCallback';
 import PaymentSuccess from './pages/user/PaymentSuccess';
 import PaymentFail from './pages/user/PaymentFail';
+import OrderHistory from './pages/user/OrderHistory';
 
 const App = () => {
   return (
@@ -49,6 +50,7 @@ const App = () => {
             <Route path="/paypal-success" element={<PaypalCallback />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-fail" element={<PaymentFail />} />
+            <Route path="/order-history" element={<OrderHistory />} />
           </Route>
 
           {/* Auth routes */}

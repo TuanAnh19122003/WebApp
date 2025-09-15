@@ -176,7 +176,42 @@ class OrderController {
                 message: 'Failed to delete order'
             });
         }
-    };
+    }
+
+    async getOrderDetailsByUser(req, res) {
+        try {
+            const userId = req.params.id || req.user?.id;
+
+            if (!userId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'User ID is required'
+                });
+            }
+
+            const orders = await OrderService.getOrdersByUser(userId);
+
+            if (!orders || orders.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'No orders found for this user'
+                });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: 'Order details fetched successfully',
+                data: orders
+            });
+        } catch (err) {
+            console.error('Error in getOrderDetailsByUser:', err);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to fetch order details',
+                error: err.message
+            });
+        }
+    }
 
 }
 

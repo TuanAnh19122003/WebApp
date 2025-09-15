@@ -39,6 +39,7 @@ const Order = () => {
             setPhone(user.phone || '');
         }
         fetchCart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchCart = async () => {

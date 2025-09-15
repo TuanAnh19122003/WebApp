@@ -14,7 +14,7 @@ const PaymentSuccess = () => {
                 <Button type="primary" onClick={() => navigate('/')}>
                     Quay lại trang chủ
                 </Button>,
-                <Button onClick={() => navigate('/order')}>Xem đơn hàng</Button>,
+                <Button onClick={() => navigate('/order-history')}>Xem đơn hàng</Button>,
             ]}
         />
     );

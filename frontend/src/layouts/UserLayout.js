@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useContext } from 'react';
 import { Layout, Menu, Button, Dropdown, Avatar, Badge } from 'antd';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
@@ -5,7 +6,8 @@ import {
     UserOutlined,
     DashboardOutlined,
     LogoutOutlined,
-    ShoppingCartOutlined
+    ShoppingCartOutlined,
+    HistoryOutlined
 } from '@ant-design/icons';
 import { CartContext } from '../pages/user/CartContext';
 import { jwtDecode } from 'jwt-decode';
@@ -65,6 +67,11 @@ const UserLayout = () => {
             key: 'profile',
             icon: <UserOutlined />,
             label: <Link to="/profile">Thông tin cá nhân</Link>,
+        },
+        {
+            key: 'order-history',
+            icon: <HistoryOutlined />,
+            label: <Link to="/order-history">Lịch sử đơn hàng</Link>,
         },
         {
             key: 'logout',
