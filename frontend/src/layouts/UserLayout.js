@@ -22,22 +22,43 @@ const UserLayout = () => {
     const [user, setUser] = useState(null);
     const { cartItemCount, fetchCartCount } = useContext(CartContext);
 
-    useEffect(() => {
+    // Hàm load user từ localStorage
+    const loadUser = () => {
         const storedUser = JSON.parse(localStorage.getItem('user'));
         if (storedUser) {
             setUser(storedUser);
             fetchCartCount();
         }
+    };
+
+    useEffect(() => {
+        // Load lần đầu
+        loadUser();
+
+        // Lắng nghe custom event userUpdated
+        const handleUserUpdated = () => loadUser();
+        window.addEventListener('userUpdated', handleUserUpdated);
+
+        // Lắng nghe storage event cho các tab khác
+        const handleStorageChange = (e) => {
+            if (e.key === 'user') {
+                loadUser();
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('userUpdated', handleUserUpdated);
+            window.removeEventListener('storage', handleStorageChange);
+        };
     }, []);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-
         if (token) {
             try {
                 const decoded = jwtDecode(token);
                 const currentTime = Date.now() / 1000;
-
                 if (decoded.exp < currentTime) {
                     handleLogout();
                 } else {

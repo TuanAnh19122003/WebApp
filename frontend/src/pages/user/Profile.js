@@ -14,38 +14,31 @@ const Profile = () => {
     const [userData, setUserData] = useState({});
     const [file, setFile] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const API_URL = process.env.REACT_APP_API_URL;
     const navigate = useNavigate();
 
+    const API_URL = process.env.REACT_APP_API_URL;
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+
     useEffect(() => {
-        const checkAuth = () => {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                message.warning('Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.');
-                navigate('/auth/login');
-            }
-        };
-        checkAuth();
-        window.addEventListener('storage', checkAuth);
-        return () => window.removeEventListener('storage', checkAuth);
+        // Kiểm tra token tồn tại
+        const token = localStorage.getItem('token');
+        if (!token) {
+            message.warning('Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.');
+            navigate('/auth/login');
+        }
     }, [navigate]);
 
-
     useEffect(() => {
-        const localUser = JSON.parse(localStorage.getItem('user') || '{}');
-        if (localUser && localUser.id && !userData.id) {
+        if (storedUser && storedUser.id && !userData.id) {
             form.setFieldsValue({
-                firstname: localUser.firstname,
-                lastname: localUser.lastname,
-                email: localUser.email,
-                phone: localUser.phone,
+                firstname: storedUser.firstname,
+                lastname: storedUser.lastname,
+                email: storedUser.email,
+                phone: storedUser.phone,
             });
-            setUserData(localUser);
+            setUserData(storedUser);
         }
-    }, [form, userData]);
-
+    }, [form, userData, storedUser]);
 
     const handleUploadChange = ({ fileList }) => {
         const rawFile = fileList?.[0]?.originFileObj;
@@ -63,6 +56,7 @@ const Profile = () => {
         });
 
         setFile(renamedFile);
+
         const reader = new FileReader();
         reader.onload = () => {
             setPreviewImage(reader.result);
@@ -70,12 +64,11 @@ const Profile = () => {
         reader.readAsDataURL(renamedFile);
     };
 
-
     const onFinish = async (values) => {
         setLoading(true);
         const formData = new FormData();
 
-        Object.keys(values).forEach(key => {
+        Object.keys(values).forEach((key) => {
             if (key === 'password' && !values[key]) return;
             formData.append(key, values[key]);
         });
@@ -85,27 +78,35 @@ const Profile = () => {
         }
 
         try {
-            const res = await axios.put(
-                `${API_URL}/users/${user.id}`,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                }
-            );
+            const res = await axios.put(`${API_URL}/users/${storedUser.id}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
 
             message.success(res.data.message || 'Cập nhật thành công');
-            localStorage.setItem('user', JSON.stringify(res.data.data));
-            setUserData(res.data.data);
-            setIsEditing(false);
+
+            // Giữ nguyên role nếu API không trả về
+            const updatedUser = {
+                ...res.data.data,
+                role: storedUser.role || res.data.data.role,
+            };
+
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            setUserData(updatedUser);
             setPreviewImage(null);
+            setFile(null);
+            setIsEditing(false);
+
+            // Event để UserLayout cập nhật avatar
+            window.dispatchEvent(new Event('userUpdated'));
         } catch (error) {
             message.error(error?.response?.data?.message || 'Cập nhật thất bại');
         } finally {
             setLoading(false);
         }
+
     };
 
     return (
@@ -145,24 +146,39 @@ const Profile = () => {
                                 >
                                     <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
                                 </Upload>
-
                             )}
                         </Col>
 
                         <Col span={16}>
-                            <Form.Item label="Họ" name="lastname" rules={[{ required: true, message: 'Vui lòng nhập họ' }]}>
+                            <Form.Item
+                                label="Họ"
+                                name="lastname"
+                                rules={[{ required: true, message: 'Vui lòng nhập họ' }]}
+                            >
                                 <Input disabled={!isEditing} />
                             </Form.Item>
 
-                            <Form.Item label="Tên" name="firstname" rules={[{ required: true, message: 'Vui lòng nhập tên' }]}>
+                            <Form.Item
+                                label="Tên"
+                                name="firstname"
+                                rules={[{ required: true, message: 'Vui lòng nhập tên' }]}
+                            >
                                 <Input disabled={!isEditing} />
                             </Form.Item>
 
-                            <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email' }]} >
+                            <Form.Item
+                                label="Email"
+                                name="email"
+                                rules={[{ required: true, type: 'email' }]}
+                            >
                                 <Input disabled />
                             </Form.Item>
 
-                            <Form.Item label="Số điện thoại" name="phone" rules={[{ required: true }]}>
+                            <Form.Item
+                                label="Số điện thoại"
+                                name="phone"
+                                rules={[{ required: true }]}
+                            >
                                 <Input disabled={!isEditing} />
                             </Form.Item>
 
@@ -177,17 +193,20 @@ const Profile = () => {
                     <Form.Item style={{ textAlign: 'right' }}>
                         {isEditing ? (
                             <>
-                                <Button onClick={() => {
-                                    setIsEditing(false);
-                                    form.setFieldsValue({
-                                        firstname: userData.firstname,
-                                        lastname: userData.lastname,
-                                        email: userData.email,
-                                        phone: userData.phone,
-                                    });
-                                    setPreviewImage(null);
-                                    setFile(null);
-                                }} style={{ marginRight: 8 }}>
+                                <Button
+                                    onClick={() => {
+                                        setIsEditing(false);
+                                        form.setFieldsValue({
+                                            firstname: userData.firstname,
+                                            lastname: userData.lastname,
+                                            email: userData.email,
+                                            phone: userData.phone,
+                                        });
+                                        setPreviewImage(null);
+                                        setFile(null);
+                                    }}
+                                    style={{ marginRight: 8 }}
+                                >
                                     Hủy
                                 </Button>
                                 <Button type="primary" htmlType="submit" loading={loading}>
