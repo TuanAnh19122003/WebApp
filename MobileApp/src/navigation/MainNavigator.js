@@ -5,6 +5,7 @@ import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import TabNavigator from './TabNavigator';
+import ProductDetailScreen from '../screens/ProductDetailScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 const Stack = createNativeStackNavigator();
@@ -16,6 +17,7 @@ const MainNavigator = () => {
             <Stack.Screen name='Main' component={TabNavigator} />
             <Stack.Screen name='Login' component={LoginScreen} />
             <Stack.Screen name='Register' component={RegisterScreen} />
+            <Stack.Screen name='ProductDetail' component={ProductDetailScreen} />
         </Stack.Navigator>
     )
 }
