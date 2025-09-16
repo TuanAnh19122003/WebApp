@@ -3,7 +3,7 @@ import React from 'react'
 
 const HomeScreen = () => {
     return (
-        <View styles={styles.container}>
+        <View style={styles.container}>
             <Text style={styles.text}>HomeScreen</Text>
         </View>
     )
@@ -18,8 +18,8 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     text: {
+        fontSize: 30,
         fontFamily: 'serif',
-        fontSize: 18,
         fontWeight: 'bold'
     }
 })
