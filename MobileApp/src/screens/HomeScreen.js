@@ -128,24 +128,30 @@ const HomeScreen = ({ navigation }) => {
             }
 
             const parsedUser = JSON.parse(user);
-            const sizeId = product.sizes?.[0]?.size_id || null;
+
+            const size = product.sizes?.[0];
+            if (!size) {
+                Alert.alert('Thông báo', 'Sản phẩm này chưa có size');
+                return;
+            }
 
             const response = await axios.post('http://10.0.2.2:5000/api/carts/add', {
                 userId: parsedUser.id,
                 productId: product.product_id,
-                sizeId,
-                quantity: 1
+                sizeId: size.size_id,
+                sizeName: size.size_name,
+                quantity: 1,
+                price: size.price
             });
 
             if (response.data) {
                 Alert.alert('Thành công', 'Sản phẩm đã được thêm vào giỏ hàng!');
             }
         } catch (error) {
-            console.log('Add to cart error:', error);
+            console.log('Add to cart error:', error.response?.data || error);
             Alert.alert('Lỗi', 'Không thể thêm vào giỏ hàng');
         }
     };
-
 
     const renderCategory = ({ item }) => (
         <TouchableOpacity
@@ -178,10 +184,9 @@ const HomeScreen = ({ navigation }) => {
                 <Text style={styles.productName}>{item.product_name}</Text>
                 <View style={styles.priceRow}>
                     <Text style={styles.productPrice}>
-                        {item.sizes?.[0]?.price
-                            // eslint-disable-next-line radix
-                            ? parseInt(item.sizes[0].price).toLocaleString() + ' đ'
-                            : 'Chưa có giá'}
+                        {item.sizes?.length > 0
+                            ? `${item.sizes[0].size_name} - ${parseInt(item.sizes[0].price, 10).toLocaleString()} đ`
+                            : 'Chưa có size'}
                     </Text>
                     <TouchableOpacity style={styles.cartButton} onPress={() => handleAddToCart(item)}>
                         <Icon name="cart-outline" size={20} color="#4e342e" />

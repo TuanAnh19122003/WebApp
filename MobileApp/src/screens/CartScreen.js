@@ -8,12 +8,13 @@ import {
     TouchableOpacity,
     Alert,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import Icon from '@react-native-vector-icons/ionicons'
+import Icon from '@react-native-vector-icons/ionicons';
+import { useFocusEffect } from '@react-navigation/native';
 
-const CartScreen = () => {
+const CartScreen = ({ navigation }) => {
     const [cartItems, setCartItems] = useState([]);
 
     const fetchCart = async () => {
@@ -33,11 +34,12 @@ const CartScreen = () => {
         }
     };
 
-    useEffect(() => {
-        fetchCart();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            fetchCart();
+        }, [])
+    );
 
-    // 👉 Cập nhật số lượng
     const updateQuantity = async (cartItemId, newQuantity) => {
         if (newQuantity <= 0) {
             handleRemove(cartItemId);
@@ -56,7 +58,6 @@ const CartScreen = () => {
         }
     };
 
-    // 👉 Xoá sản phẩm
     const handleRemove = async cartItemId => {
         try {
             await axios.delete(`http://10.0.2.2:5000/api/carts/remove`, {
@@ -69,7 +70,6 @@ const CartScreen = () => {
         }
     };
 
-    // 👉 Render từng item
     const renderItem = ({ item }) => (
         <View style={styles.item}>
             {item.product?.image ? (
@@ -83,12 +83,11 @@ const CartScreen = () => {
 
             <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.product?.product_name}</Text>
-                <Text>Size: {item.size?.size_name || 'Default'}</Text>
+                <Text>Size: {item.size?.name || 'Default'}</Text>
                 <Text style={styles.price}>
                     {parseInt(item.price, 10).toLocaleString()} đ
                 </Text>
 
-                {/* Nút tăng/giảm số lượng */}
                 <View style={styles.row}>
                     <TouchableOpacity
                         onPress={() => updateQuantity(item.id, item.quantity - 1)}>
@@ -102,14 +101,12 @@ const CartScreen = () => {
                 </View>
             </View>
 
-            {/* Nút xoá */}
             <TouchableOpacity onPress={() => handleRemove(item.id)}>
                 <Icon name="trash-outline" size={28} color="#757575" />
             </TouchableOpacity>
         </View>
     );
 
-    // 👉 Tính tổng tiền
     const totalPrice = cartItems.reduce(
         (sum, item) => sum + parseFloat(item.price) * item.quantity,
         0,
@@ -130,14 +127,19 @@ const CartScreen = () => {
                 }
             />
 
-            {/* Tổng tiền */}
             {cartItems.length > 0 && (
                 <View style={styles.footer}>
                     <Text style={styles.totalText}>
                         Tổng: {totalPrice.toLocaleString()} đ
                     </Text>
-                    <TouchableOpacity style={styles.checkoutBtn}>
-                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Thanh toán</Text>
+                    <TouchableOpacity
+                        style={styles.checkoutBtn}
+                        onPress={() =>
+                            navigation.navigate('Checkout', { cartItems, totalPrice })
+                        }>
+                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+                            Thanh toán
+                        </Text>
                     </TouchableOpacity>
                 </View>
             )}
