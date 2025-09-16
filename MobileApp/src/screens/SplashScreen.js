@@ -24,7 +24,7 @@ const SplashScreen = ({ navigation }) => {
 
     useEffect(() => {
         if (progress === 100) {
-            navigation.replace('Home');
+            navigation.replace('Login');
         }
     }, [progress, navigation]);
 
