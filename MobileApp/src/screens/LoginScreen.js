@@ -32,7 +32,7 @@ const LoginScreen = ({ navigation }) => {
             }
 
             Alert.alert('Thông báo', message);
-            navigation.navigate('Home');
+            navigation.navigate('Main');
         } catch (error) {
             if (error.response?.data?.message) {
                 Alert.alert('Lỗi đăng nhập', error.response.data.message);
