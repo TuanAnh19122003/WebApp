@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, { useState, useEffect } from 'react';
 import {
     View,
@@ -124,13 +125,13 @@ const CheckoutScreen = ({ route, navigation }) => {
             />
 
             <Text style={styles.label}>Địa chỉ giao hàng</Text>
-            <TouchableOpacity onPress={() => setModalVisible(true)}>
-                <TextInput
-                    style={styles.input}
-                    value={address}
-                    placeholder="Chọn địa chỉ"
-                    editable={false}
-                />
+            <TouchableOpacity
+                style={styles.input}
+                onPress={() => setModalVisible(true)}
+            >
+                <Text style={{ color: address ? '#000' : '#999' }}>
+                    {address || 'Chọn địa chỉ'}
+                </Text>
             </TouchableOpacity>
 
             <AddressModal
