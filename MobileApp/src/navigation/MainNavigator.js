@@ -7,6 +7,7 @@ import RegisterScreen from '../screens/RegisterScreen';
 import TabNavigator from './TabNavigator';
 import ProductDetailScreen from '../screens/ProductDetailScreen';
 import CheckoutScreen from '../screens/CheckoutScreen';
+import PayPalScreen from '../screens/PayPalScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 const Stack = createNativeStackNavigator();
@@ -20,6 +21,7 @@ const MainNavigator = () => {
             <Stack.Screen name='Register' component={RegisterScreen} />
             <Stack.Screen name='ProductDetail' component={ProductDetailScreen} />
             <Stack.Screen name="Checkout" component={CheckoutScreen} />
+            <Stack.Screen name="PayPalScreen" component={PayPalScreen} />
         </Stack.Navigator>
     )
 }

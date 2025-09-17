@@ -8,17 +8,16 @@ import {
     StyleSheet,
     ScrollView,
     Alert,
-    Linking,
     ActivityIndicator,
 } from 'react-native';
 import axios from 'axios';
-import AddressModal from '../components/AddressModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AddressModal from '../components/AddressModal';
 
 const API_URL = 'http://10.0.2.2:5000';
 
 const CheckoutScreen = ({ route, navigation }) => {
-    const { cartItems = [], totalPrice = 0 } = route.params || {};
+    const { cartItems = [] } = route.params || {};
 
     const [loading, setLoading] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState('COD');
@@ -53,7 +52,6 @@ const CheckoutScreen = ({ route, navigation }) => {
         if (!address || !phone) {
             return Alert.alert('Vui lòng nhập đầy đủ thông tin giao hàng');
         }
-
         if (!cartItems.length) {
             return Alert.alert('Giỏ hàng trống');
         }
@@ -61,7 +59,7 @@ const CheckoutScreen = ({ route, navigation }) => {
         try {
             setLoading(true);
 
-            // Chuẩn bị dữ liệu order
+            // Chuẩn bị items cho backend
             const items = cartItems.map(item => ({
                 productId: item.productId || item.product?.id,
                 sizeId: item.sizeId || item.size?.id,
@@ -69,10 +67,13 @@ const CheckoutScreen = ({ route, navigation }) => {
                 price: item.price,
             }));
 
+            // Tính totalPrice chính xác để tránh ITEM_TOTAL_MISMATCH
+            const totalPrice = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
             const orderData = {
                 userId,
                 items,
-                totalPrice: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+                totalPrice,
                 note: '',
                 shipping_address: address,
                 paymentMethod: paymentMethod.toLowerCase(),
@@ -81,18 +82,28 @@ const CheckoutScreen = ({ route, navigation }) => {
             const res = await axios.post(`${API_URL}/api/orders`, orderData);
 
             if (paymentMethod === 'paypal' && res.data.approveUrl) {
-                Linking.openURL(res.data.approveUrl).catch(err =>
-                    Alert.alert('Không thể mở PayPal', err.message)
-                );
+                navigation.navigate('PayPalScreen', {
+                    approveUrl: res.data.approveUrl,
+                    orderId: res.data.data.id,
+                    onSuccess: async () => {
+                        try {
+                            await axios.delete(`${API_URL}/api/carts/clear/${userId}`);
+                            Alert.alert('Đặt hàng thành công!');
+                            navigation.navigate('Main');
+                        } catch (err) {
+                            console.error('Lỗi xóa giỏ hàng sau PayPal:', err);
+                        }
+                    },
+                });
                 return;
             }
-            
+
+            // Nếu COD, xóa giỏ hàng ngay
             await axios.delete(`${API_URL}/api/carts/clear/${userId}`);
             Alert.alert('Đặt hàng thành công!');
             navigation.navigate('Main');
-
         } catch (error) {
-            console.error(error);
+            console.error('Lỗi khi đặt hàng:', error.response?.data || error.message);
             Alert.alert('Lỗi khi đặt hàng');
         } finally {
             setLoading(false);
@@ -134,20 +145,41 @@ const CheckoutScreen = ({ route, navigation }) => {
                 </Text>
             </TouchableOpacity>
 
+            {/* Address Modal */}
             <AddressModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
-                onConfirm={setAddress}
+                onConfirm={(addr) => {
+                    setAddress(addr);
+                    setModalVisible(false);
+                }}
             />
 
             <Text style={styles.label}>Phương thức thanh toán</Text>
             <View style={styles.radioGroup}>
-                <TouchableOpacity onPress={() => setPaymentMethod('COD')} style={styles.radioOption}>
-                    <View style={[styles.radioCircle, paymentMethod === 'COD' && styles.radioSelected]} />
+                <TouchableOpacity
+                    onPress={() => setPaymentMethod('COD')}
+                    style={styles.radioOption}
+                >
+                    <View
+                        style={[
+                            styles.radioCircle,
+                            paymentMethod === 'COD' && styles.radioSelected,
+                        ]}
+                    />
                     <Text style={styles.radioLabel}>Thanh toán khi nhận hàng (COD)</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setPaymentMethod('paypal')} style={styles.radioOption}>
-                    <View style={[styles.radioCircle, paymentMethod === 'paypal' && styles.radioSelected]} />
+
+                <TouchableOpacity
+                    onPress={() => setPaymentMethod('paypal')}
+                    style={styles.radioOption}
+                >
+                    <View
+                        style={[
+                            styles.radioCircle,
+                            paymentMethod === 'paypal' && styles.radioSelected,
+                        ]}
+                    />
                     <Text style={styles.radioLabel}>Thanh toán qua PayPal</Text>
                 </TouchableOpacity>
             </View>

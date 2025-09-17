@@ -84,56 +84,64 @@ class OrderService {
 
             await OrderItem.bulkCreate(orderItemsData, { transaction: t });
 
-            if (paymentMethod === 'paypal') {
-                const usdTotal = (totalPrice / 24000).toFixed(2);
-
-                const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
-                request.prefer('return=representation');
-                request.requestBody({
-                    intent: 'CAPTURE',
-                    purchase_units: [{
-                        amount: {
-                            currency_code: 'USD',
-                            value: usdTotal,
-                            breakdown: {
-                                item_total: {
-                                    currency_code: 'USD',
-                                    value: usdTotal,
-                                },
-                            },
-                        },
-                        description: `Order #${order.id}`,
-                        items: items.map(item => ({
-                            name: `${productMap[item.productId] || 'Sản phẩm'} - Size ${sizeMap[item.sizeId] || ''}`,
-                            unit_amount: {
-                                currency_code: 'USD',
-                                value: (item.price / 24000).toFixed(2),
-                            },
-                            quantity: item.quantity.toString(),
-                        }))
-                    }],
-                    application_context: {
-                        brand_name: 'My Shop',
-                        landing_page: 'LOGIN',
-                        user_action: 'PAY_NOW',
-                        return_url: `http://localhost:3000/paypal-success?orderId=${order.id}`,
-                        cancel_url: `http://localhost:3000/payment-fail?orderId=${order.id}`,
-                    },
-                });
-
-                const response = await paypalClient().execute(request);
-                const paypalOrderId = response.result.id;
-                const approveUrl = response.result.links.find(link => link.rel === 'approve')?.href;
-
-                order.paypal_order_id = paypalOrderId;
-                await order.save({ transaction: t });
-
-                return { order, approveUrl };
+            // Nếu COD thì trả về luôn
+            if (paymentMethod === 'cod') {
+                return { order };
             }
 
-            return { order };
+            // Nếu PayPal, tính toán chính xác giá USD
+            const itemsUSD = items.map(item => ({
+                ...item,
+                unitAmount: parseFloat((item.price / 24000).toFixed(2)) // quy đổi VND -> USD
+            }));
+
+            // Tính tổng chính xác item_total
+            const itemTotal = itemsUSD.reduce((sum, item) => sum + item.unitAmount * item.quantity, 0).toFixed(2);
+
+            const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
+            request.prefer('return=representation');
+            request.requestBody({
+                intent: 'CAPTURE',
+                purchase_units: [{
+                    amount: {
+                        currency_code: 'USD',
+                        value: itemTotal,
+                        breakdown: {
+                            item_total: {
+                                currency_code: 'USD',
+                                value: itemTotal,
+                            },
+                        },
+                    },
+                    items: itemsUSD.map(item => ({
+                        name: `${productMap[item.productId] || 'Sản phẩm'} - Size ${sizeMap[item.sizeId] || ''}`,
+                        unit_amount: {
+                            currency_code: 'USD',
+                            value: item.unitAmount.toFixed(2),
+                        },
+                        quantity: item.quantity.toString(),
+                    }))
+                }],
+                application_context: {
+                    brand_name: 'My Shop',
+                    landing_page: 'LOGIN',
+                    user_action: 'PAY_NOW',
+                    return_url: `http://localhost:3000/paypal-success?orderId=${order.id}`,
+                    cancel_url: `http://localhost:3000/payment-fail?orderId=${order.id}`,
+                },
+            });
+
+            const response = await paypalClient().execute(request);
+            const paypalOrderId = response.result.id;
+            const approveUrl = response.result.links.find(link => link.rel === 'approve')?.href;
+
+            order.paypal_order_id = paypalOrderId;
+            await order.save({ transaction: t });
+
+            return { order, approveUrl };
         });
     }
+
 
     static async update(orderId, { userId, note, items }) {
         return await Order.sequelize.transaction(async (t) => {
@@ -229,7 +237,7 @@ class OrderService {
             return { message: 'Order deleted successfully' };
         });
     }
-    
+
 }
 
 module.exports = OrderService;
