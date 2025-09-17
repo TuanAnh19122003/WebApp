@@ -1,10 +1,11 @@
 /* eslint-disable react-native/no-inline-styles */
-/* eslint-disable no-alert */
 import React, { useState, useEffect } from 'react';
 import {
-    View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, FlatList, SafeAreaView
+    View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, FlatList, SafeAreaView, ToastAndroid, Platform, Alert
 } from 'react-native';
 import Icon from '@react-native-vector-icons/ionicons';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProductDetailScreen = ({ route, navigation }) => {
     const { product } = route.params;
@@ -23,8 +24,40 @@ const ProductDetailScreen = ({ route, navigation }) => {
         setPrice(size.price);
     };
 
-    const handleAddToCart = () => {
-        alert('Đã thêm vào giỏ hàng!');
+    const handleAddToCart = async () => {
+        try {
+            const userData = await AsyncStorage.getItem('user');
+            if (!userData) {
+                Alert.alert('Bạn cần đăng nhập để mua hàng');
+                return;
+            }
+            const parsedUser = JSON.parse(userData);
+
+            if (!selectedSize) {
+                Alert.alert('Bạn chưa chọn size');
+                return;
+            }
+
+            const response = await axios.post('http://10.0.2.2:5000/api/carts/add', {
+                userId: parsedUser.id,
+                productId: product.product_id,
+                sizeId: selectedSize.size_id,
+                sizeName: selectedSize.size_name,
+                quantity: 1,
+                price: selectedSize.price,
+            });
+
+            console.log('Add to cart response:', response.data);
+
+            if (Platform.OS === 'android') {
+                ToastAndroid.show('Sản phẩm đã được thêm vào giỏ hàng!', ToastAndroid.SHORT);
+            } else {
+                Alert.alert('Thành công', 'Sản phẩm đã được thêm vào giỏ hàng!');
+            }
+        } catch (error) {
+            console.log('Add to cart error:', error.response?.data || error);
+            Alert.alert('Lỗi', 'Không thể thêm vào giỏ hàng');
+        }
     };
 
     return (
@@ -78,7 +111,6 @@ const ProductDetailScreen = ({ route, navigation }) => {
                 )}
             </ScrollView>
 
-            {/* Thanh điều hướng dưới cùng */}
             <View style={styles.bottomBar}>
                 <TouchableOpacity
                     style={styles.backButtonBottom}
@@ -183,7 +215,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-    backButtonBottom:{
+    backButtonBottom: {
         marginRight: 10,
         backgroundColor: '#6d4c41',
         padding: 12,

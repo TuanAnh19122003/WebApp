@@ -27,7 +27,6 @@ const CartScreen = ({ navigation }) => {
                 `http://10.0.2.2:5000/api/carts/${parsedUser.id}`,
             );
 
-            console.log('Cart API result:', response.data);
             setCartItems(response.data.data || []);
         } catch (error) {
             console.log(error);
@@ -81,28 +80,32 @@ const CartScreen = ({ navigation }) => {
                 <View style={styles.imagePlaceholder} />
             )}
 
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, marginHorizontal: 10 }}>
                 <Text style={styles.name}>{item.product?.product_name}</Text>
-                <Text>Size: {item.size?.name || 'Default'}</Text>
+                <Text style={styles.size}>Size: {item.size?.name || 'Default'}</Text>
                 <Text style={styles.price}>
                     {parseInt(item.price, 10).toLocaleString()} đ
                 </Text>
 
                 <View style={styles.row}>
                     <TouchableOpacity
+                        style={styles.qtyBtn}
                         onPress={() => updateQuantity(item.id, item.quantity - 1)}>
-                        <Icon name="remove-circle-outline" size={28} color="#d32f2f" />
+                        <Icon name="remove" size={20} color="#fff" />
                     </TouchableOpacity>
+
                     <Text style={styles.qty}>{item.quantity}</Text>
+
                     <TouchableOpacity
+                        style={[styles.qtyBtn, { backgroundColor: '#4caf50' }]}
                         onPress={() => updateQuantity(item.id, item.quantity + 1)}>
-                        <Icon name="add-circle-outline" size={28} color="#388e3c" />
+                        <Icon name="add" size={20} color="#fff" />
                     </TouchableOpacity>
                 </View>
             </View>
 
-            <TouchableOpacity onPress={() => handleRemove(item.id)}>
-                <Icon name="trash-outline" size={28} color="#757575" />
+            <TouchableOpacity onPress={() => handleRemove(item.id)} style={styles.deleteBtn}>
+                <Icon name="trash" size={24} color="#d32f2f" />
             </TouchableOpacity>
         </View>
     );
@@ -115,13 +118,14 @@ const CartScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Giỏ hàng</Text>
+
             <FlatList
                 data={cartItems}
                 keyExtractor={item => item.id.toString()}
                 renderItem={renderItem}
-                contentContainerStyle={{ padding: 10 }}
+                contentContainerStyle={{ paddingHorizontal: 15, paddingBottom: 100 }}
                 ListEmptyComponent={
-                    <Text style={{ textAlign: 'center', marginTop: 20 }}>
+                    <Text style={{ textAlign: 'center', marginTop: 50, fontSize: 16 }}>
                         Giỏ hàng trống
                     </Text>
                 }
@@ -137,7 +141,7 @@ const CartScreen = ({ navigation }) => {
                         onPress={() =>
                             navigation.navigate('Checkout', { cartItems, totalPrice })
                         }>
-                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>
+                        <Text style={styles.checkoutText}>
                             Thanh toán
                         </Text>
                     </TouchableOpacity>
@@ -150,48 +154,66 @@ const CartScreen = ({ navigation }) => {
 export default CartScreen;
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff' },
+    container: { flex: 1, backgroundColor: '#f5f5f5' },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
         textAlign: 'center',
         marginVertical: 10,
-        paddingTop: 50
+        paddingTop: 50,
     },
     item: {
         flexDirection: 'row',
-        marginBottom: 15,
-        backgroundColor: '#f9f9f9',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 12,
         padding: 10,
-        borderRadius: 10,
+        marginVertical: 6,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    image: { width: 80, height: 80, borderRadius: 10 },
+    imagePlaceholder: { width: 80, height: 80, borderRadius: 10, backgroundColor: '#ccc' },
+    name: { fontSize: 16, fontWeight: 'bold' },
+    size: { fontSize: 14, color: '#555', marginTop: 3 },
+    price: { color: '#d32f2f', fontWeight: 'bold', marginTop: 5, fontSize: 15 },
+    row: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+    qtyBtn: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: '#1976d2',
+        justifyContent: 'center',
         alignItems: 'center',
     },
-    image: { width: 80, height: 80, borderRadius: 8, marginRight: 10 },
-    imagePlaceholder: {
-        width: 80,
-        height: 80,
-        backgroundColor: '#ccc',
-        borderRadius: 8,
-        marginRight: 10,
-    },
-    name: { fontSize: 16, fontWeight: 'bold' },
-    price: { color: '#d32f2f', marginTop: 5, fontWeight: 'bold' },
-    row: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
     qty: { marginHorizontal: 10, fontSize: 16, fontWeight: 'bold' },
+    deleteBtn: { padding: 5 },
     footer: {
+        position: 'absolute',
+        bottom: 0,
+        width: '100%',
+        padding: 15,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 15,
-        borderTopWidth: 1,
-        borderColor: '#eee',
-        backgroundColor: '#fafafa',
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+        shadowOffset: { width: 0, height: -2 },
+        shadowRadius: 4,
+        elevation: 5,
     },
     totalText: { fontSize: 18, fontWeight: 'bold', color: '#d32f2f' },
     checkoutBtn: {
         backgroundColor: '#1976d2',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 8,
+        paddingHorizontal: 25,
+        paddingVertical: 12,
+        borderRadius: 10,
     },
+    checkoutText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 });
