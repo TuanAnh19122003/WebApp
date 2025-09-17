@@ -156,6 +156,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         marginVertical: 10,
+        paddingTop: 50
     },
     item: {
         flexDirection: 'row',

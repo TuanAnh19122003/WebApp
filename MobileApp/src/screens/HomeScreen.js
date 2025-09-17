@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable no-shadow */
-import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, TextInput, Alert } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList, TextInput, Alert, Platform, ToastAndroid } from 'react-native'
+import React, { useState, useEffect, useRef } from 'react'
 import { getGreeting } from '../utils/greeting'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from '@react-native-vector-icons/ionicons';
@@ -16,6 +16,23 @@ const HomeScreen = ({ navigation }) => {
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
+    // Track if component is mounted
+    const isMounted = useRef(true);
+    useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+        }
+    }, []);
+
+    const showMessage = (msg) => {
+        if (!isMounted.current) return;
+        if (Platform.OS === 'android') {
+            ToastAndroid.show(msg, ToastAndroid.SHORT);
+        } else {
+            Alert.alert(msg);
+        }
+    }
 
     const fetchUser = async () => {
         try {
@@ -123,7 +140,7 @@ const HomeScreen = ({ navigation }) => {
         try {
             const user = await AsyncStorage.getItem('user');
             if (!user) {
-                Alert.alert('Thông báo', 'Bạn cần đăng nhập để mua hàng');
+                showMessage('Bạn cần đăng nhập để mua hàng');
                 return;
             }
 
@@ -131,7 +148,7 @@ const HomeScreen = ({ navigation }) => {
 
             const size = product.sizes?.[0];
             if (!size) {
-                Alert.alert('Thông báo', 'Sản phẩm này chưa có size');
+                showMessage('Sản phẩm này chưa có size');
                 return;
             }
 
@@ -143,13 +160,11 @@ const HomeScreen = ({ navigation }) => {
                 quantity: 1,
                 price: size.price
             });
-
-            if (response.data) {
-                Alert.alert('Thành công', 'Sản phẩm đã được thêm vào giỏ hàng!');
-            }
+            console.log("Response add to cart:", response.data);
+            showMessage('Sản phẩm đã được thêm vào giỏ hàng!');
         } catch (error) {
             console.log('Add to cart error:', error.response?.data || error);
-            Alert.alert('Lỗi', 'Không thể thêm vào giỏ hàng');
+            showMessage('Không thể thêm vào giỏ hàng');
         }
     };
 
@@ -229,7 +244,7 @@ const HomeScreen = ({ navigation }) => {
                         size={30}
                         color='#4e342e'
                         style={styles.iconSearch}
-                        onPress={() => { Alert.alert('Tìm kiếm', 'Tìm kiếm thành công') }}
+                        onPress={() => showMessage('Tìm kiếm thành công')}
                     />
                 </View>
                 <FlatList
@@ -260,6 +275,7 @@ const HomeScreen = ({ navigation }) => {
 }
 
 export default HomeScreen
+
 
 const styles = StyleSheet.create({
     container: {
